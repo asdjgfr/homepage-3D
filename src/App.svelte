@@ -1,4 +1,6 @@
-<style>
+<style lang="scss">
+@import "sweetalert2/src/sweetalert2.scss";
+
 main {
   text-align: center;
   padding: 1em;
