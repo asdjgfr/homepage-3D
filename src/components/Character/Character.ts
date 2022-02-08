@@ -8,6 +8,7 @@ import {
   ACESFilmicToneMapping,
   sRGBEncoding,
   PointLight,
+  AnimationAction,
 } from "three";
 import { GLTFLoader } from "../Three/GLTFLoader";
 import { OrbitControls } from "../Three/OrbitControls";
@@ -26,27 +27,24 @@ export default class {
   private loader: GLTFLoader;
   private point: PointLight;
   private mixer: AnimationMixer;
+  private animationAction: AnimationAction;
   public percent: number = 0;
   public finished: boolean = false;
   private controls: OrbitControls;
   private GLTFPath: string = "/assets/character.glb";
+  private gltf: any;
+
   constructor({ dom }: CharacterProps) {
     this.dom = dom;
-
     this.init();
   }
   async init() {
+    const { width, height } = this.domRect;
     this.clock = new Clock();
     this.scene = new Scene();
-    this.camera = new PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
+    this.camera = new PerspectiveCamera(45, width / height, 1, 1000);
     this.renderer = new WebGLRenderer({
       antialias: true,
-      canvas: this.dom,
       alpha: true,
     });
 
@@ -56,30 +54,32 @@ export default class {
     this.initControls();
     point.position.set(400, 200, 300); //点光源位置
     scene.add(point);
-    camera.position.set(-1.8, 0.6, 2.7);
+    camera.position.set(0, 0, 500);
+    camera.lookAt(0, 0, 500);
     renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.toneMapping = ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
     renderer.outputEncoding = sRGBEncoding;
+    this.dom.appendChild(renderer.domElement);
     this.resize();
     this.resizeObserver();
     await this.loadGLTF();
-    this.animate();
+    this.animate(true);
   }
   render() {
     this.renderer?.render(this.scene, this.camera);
   }
   resizeObserver() {
-    window.addEventListener("resize", this.resize.bind(this));
+    new ResizeObserver(this.resize.bind(this)).observe(this.dom);
   }
   resize() {
     requestAnimationFrame(() => {
       const { camera } = this;
-      const { innerWidth, innerHeight } = window;
-      camera.aspect = innerWidth / innerHeight;
+      const { width, height } = this.domRect;
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      this.renderer.setSize(innerWidth, innerHeight);
+      this.renderer.setSize(width, height);
       this.render();
     });
   }
@@ -90,55 +90,65 @@ export default class {
     controls.addEventListener("change", this.render.bind(this));
     controls.minDistance = 2;
     controls.maxDistance = 10;
-    controls.target.set(0, 0, -0.2);
+    controls.target.set(0, 0, 0);
     controls.update();
     this.render();
   }
-  animate() {
+  animate(refresh = false) {
     const { controls, mixer, clock } = this;
-    requestAnimationFrame(this.animate.bind(this));
-    controls.update();
-    if (mixer) {
-      mixer.update(clock.getDelta());
+    if (refresh === true) {
+      console.log(this.gltf.animations);
+      this.animationAction = mixer.clipAction(this.gltf.animations[2]);
+      const { animationAction } = this;
+      animationAction.reset();
+      animationAction.fadeIn(1);
+      animationAction.play();
     }
+    controls.update();
+    mixer?.update(clock.getDelta());
     this.render();
+    requestAnimationFrame(this.animate.bind(this));
   }
   async loadGLTF() {
     const { scene } = this;
-    this.loader.load(
-      // resource URL
-      this.GLTFPath,
-      // called when the resource is loaded
-      (gltf) => {
-        // gltf.animations; // Array<THREE.AnimationClip>
-        // gltf.scene; // THREE.Group
-        // gltf.scenes; // Array<THREE.Group>
-        // gltf.cameras; // Array<THREE.Camera>
-        // gltf.asset; // Object
-        scene.add(gltf.scene);
-        this.mixer = new AnimationMixer(gltf.scene);
-        const animationAction = this.mixer.clipAction(gltf.animations[1]);
-        animationAction.reset();
-        animationAction.fadeIn(1);
-        animationAction.play();
+    return new Promise((resolve, reject) => {
+      this.loader.load(
+        // resource URL
+        this.GLTFPath,
+        // called when the resource is loaded
+        (gltf) => {
+          // gltf.animations; // Array<THREE.AnimationClip>
+          // gltf.scene; // THREE.Group
+          // gltf.scenes; // Array<THREE.Group>
+          // gltf.cameras; // Array<THREE.Camera>
+          // gltf.asset; // Object
+          this.gltf = gltf;
+          scene.add(gltf.scene);
+          this.mixer = new AnimationMixer(gltf.scene);
 
-        this.render();
-        this.finished = true;
-      },
-      // called while loading is progressing
-      ({ loaded, total }) => {
-        this.percent = Number(((loaded / total) * 100).toFixed(2));
-      },
-      // called when loading has errors
-      (err) => {
-        Swal.fire({
-          icon: "error",
-          title: "模型加载失败",
-          text: err,
-        }).then(function () {
-          window.location.reload();
-        });
-      }
-    );
+          this.render();
+          this.finished = true;
+          resolve(gltf);
+        },
+        // called while loading is progressing
+        ({ loaded, total }) => {
+          this.percent = Number(((loaded / total) * 100).toFixed(2));
+        },
+        // called when loading has errors
+        (err) => {
+          Swal.fire({
+            icon: "error",
+            title: "模型加载失败",
+            text: err,
+          }).then(function () {
+            window.location.reload();
+          });
+          reject(err);
+        }
+      );
+    });
+  }
+  get domRect() {
+    return this.dom.getBoundingClientRect();
   }
 }

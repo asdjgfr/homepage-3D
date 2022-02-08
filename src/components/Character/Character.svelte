@@ -1,11 +1,8 @@
 <style>
 .character {
-  top: 0;
-  left: 0;
-  position: fixed;
-  z-index: 999;
-  height: 100vh;
-  width: 100vw;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 </style>
 
@@ -18,7 +15,6 @@ let sceneElement;
 onMount(() => {
   new Character({ dom: sceneElement });
 });
-console.log("asdasd");
 </script>
 
-<canvas bind:this="{sceneElement}" class="character"></canvas>
+<div bind:this="{sceneElement}" class="character"></div>
