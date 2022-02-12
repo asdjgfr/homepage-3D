@@ -1,4 +1,3 @@
-import Swal from "sweetalert2";
 import {
   Clock,
   Scene,
@@ -136,13 +135,7 @@ export default class {
         },
         // called when loading has errors
         (err) => {
-          Swal.fire({
-            icon: "error",
-            title: "模型加载失败",
-            text: err,
-          }).then(function () {
-            window.location.reload();
-          });
+          alert(`模型加载失败${String(err)}`);
           reject(err);
         }
       );

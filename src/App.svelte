@@ -1,6 +1,4 @@
 <style lang="scss">
-@import "sweetalert2/src/sweetalert2.scss";
-
 .main {
   padding: 20px 5px;
   width: 100vw;
@@ -11,13 +9,11 @@
 </style>
 
 <script lang="ts">
-import Header from "./components/Header/Header.svelte";
 import WebGLFluidSimulation from "./components/WebGLFluidSimulation/WebGLFluidSimulation.svelte";
-import Container from "./components/Container/Container.svelte";
+import Content from "./components/Content/Content.svelte";
 </script>
 
 <main class="main">
   <WebGLFluidSimulation />
-  <Header />
-  <Container />
+  <Content />
 </main>
