@@ -1,11 +1,9 @@
-import { Matrix4, Vector3 } from "three";
-import { clamp } from "../Three/MathUtils";
-import TextGeometry from "../Three/TextGeometry";
+import { Matrix4, MathUtils, FontLoader, TextGeometry } from "three";
 import gsap from "gsap";
 import THREERoot from "../Three/THREERoot";
 import TextAnimation from "../Three/TextAnimation";
 import { Utils } from "three-bas";
-import { FontLoader } from "../Three/FontLoader";
+
 import { Power1 } from "gsap/gsap-core";
 
 export interface ThreeDTextProps {
@@ -29,8 +27,8 @@ class ThreeDText {
   }
   async init(root: THREERoot) {
     const textAnimation = await this.createTextAnimation();
-
     textAnimation.position.y = -40;
+    console.log(textAnimation);
     root.scene.add(textAnimation);
 
     const tl = gsap.timeline({
@@ -57,22 +55,18 @@ class ThreeDText {
       );
     });
     const geometry = this.generateTextGeometry("UP IN SMOKE", {
-      size: 14,
-      height: 0,
       font,
-      weight: "regular",
-      style: "regular",
-      bevelSize: 0.75,
-      bevelThickness: 0.5,
+      size: 40,
+      height: 12,
+      weight: "bold",
+      style: "normal",
+      curveSegments: 24,
+      bevelSize: 2,
+      bevelThickness: 2,
       bevelEnabled: true,
-      anchor: { x: 0.5, y: 0.0, z: 0.5 },
-      curveSegments: 12,
-      bevelOffset: 0,
-      bevelSegments: 5,
+      anchor: { x: 0.5, y: 0.5, z: 0.0 },
     });
     Utils.separateFaces(geometry);
-    console.log(geometry);
-
     return new TextAnimation(geometry);
   }
 
@@ -81,16 +75,16 @@ class ThreeDText {
 
     geometry.computeBoundingBox();
 
-    geometry.userData = {};
-    geometry.userData.size = {
+    geometry["userData"] = {};
+    geometry["userData"].size = {
       width: geometry.boundingBox.max.x - geometry.boundingBox.min.x,
       height: geometry.boundingBox.max.y - geometry.boundingBox.min.y,
       depth: geometry.boundingBox.max.z - geometry.boundingBox.min.z,
     };
 
-    const anchorX = geometry.userData.size.width * -params.anchor.x;
-    const anchorY = geometry.userData.size.height * -params.anchor.y;
-    const anchorZ = geometry.userData.size.depth * -params.anchor.z;
+    const anchorX = geometry["userData"].size.width * -params.anchor.x;
+    const anchorY = geometry["userData"].size.height * -params.anchor.y;
+    const anchorZ = geometry["userData"].size.depth * -params.anchor.z;
     const matrix = new Matrix4().makeTranslation(anchorX, anchorY, anchorZ);
     geometry.applyMatrix4(matrix);
     return geometry;
@@ -107,7 +101,7 @@ class ThreeDText {
 
     function seek(dx) {
       const progress = tween.progress();
-      const p = clamp(progress + dx * seekSpeed, 0, 1);
+      const p = MathUtils.clamp(progress + dx * seekSpeed, 0, 1);
 
       tween.progress(p);
     }
@@ -116,44 +110,43 @@ class ThreeDText {
 
     // desktop
     let mouseDown = false;
-    document.body.style.cursor = "pointer";
 
-    window.addEventListener("mousedown", function (e) {
+    window.addEventListener("mousedown", (e) => {
       mouseDown = true;
       document.body.style.cursor = "ew-resize";
       _cx = e.clientX;
-      stop();
+      stop.call(this);
     });
-    window.addEventListener("mouseup", function () {
+    window.addEventListener("mouseup", () => {
       mouseDown = false;
       document.body.style.cursor = "pointer";
-      resume();
+      resume.call(this);
     });
-    window.addEventListener("mousemove", function (e) {
+    window.addEventListener("mousemove", (e) => {
       if (mouseDown === true) {
         const cx = e.clientX;
         const dx = cx - _cx;
         _cx = cx;
 
-        seek(dx);
+        seek.call(this, dx);
       }
     });
     // mobile
-    window.addEventListener("touchstart", function (e) {
+    window.addEventListener("touchstart", (e) => {
       _cx = e.touches[0].clientX;
-      stop();
+      stop.call(this);
       e.preventDefault();
     });
-    window.addEventListener("touchend", function (e) {
-      resume();
+    window.addEventListener("touchend", (e) => {
+      resume.call(this);
       e.preventDefault();
     });
-    window.addEventListener("touchmove", function (e) {
+    window.addEventListener("touchmove", (e) => {
       const cx = e.touches[0].clientX;
       const dx = cx - _cx;
       _cx = cx;
 
-      seek(dx);
+      seek.call(this, dx);
       e.preventDefault();
     });
   }

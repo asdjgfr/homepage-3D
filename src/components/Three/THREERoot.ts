@@ -1,5 +1,5 @@
 import { WebGLRenderer, PerspectiveCamera, Scene } from "three";
-import { OrbitControls } from "../Three/OrbitControls";
+// import { OrbitControls } from "../Three/OrbitControls";
 
 export interface THREERootInterface {
   antialias?: boolean;
@@ -20,7 +20,7 @@ class THREERoot {
   public readonly dom: HTMLElement;
   public readonly camera: PerspectiveCamera;
   public readonly scene: Scene;
-  public readonly controls?: OrbitControls;
+  // public readonly controls?: OrbitControls;
 
   constructor({
     antialias,
@@ -53,7 +53,7 @@ class THREERoot {
     this.scene = new Scene();
 
     if (this.createCameraControls) {
-      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+      // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     }
     this.tick();
     this.resizeObserver();
@@ -67,7 +67,7 @@ class THREERoot {
     requestAnimationFrame(this.tick.bind(this));
   }
   update() {
-    this.controls && this.controls.update();
+    // this.controls && this.controls.update();
   }
   render() {
     this.renderer.render(this.scene, this.camera);

@@ -7,13 +7,13 @@
 </style>
 
 <script>
-import Character from "./Character";
+// import Character from "./Character";
 import { onMount } from "svelte";
 
 let sceneElement;
 
 onMount(() => {
-  new Character({ dom: sceneElement });
+  // new Character({ dom: sceneElement });
 });
 </script>
 
