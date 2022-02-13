@@ -49,6 +49,7 @@ export default {
   },
   plugins: [
     replace({
+      preventAssignment: true,
       __buildDate__: () => JSON.stringify(new Date()),
       __buildVersion: JSON.stringify(version),
       ...Object.entries(process.env).reduce((acc, [key, value]) => {
