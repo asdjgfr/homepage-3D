@@ -2,8 +2,7 @@ import { Matrix4, MathUtils, FontLoader, TextGeometry } from "three";
 import gsap from "gsap";
 import THREERoot from "../Three/THREERoot";
 import TextAnimation from "../Three/TextAnimation";
-import { Utils } from "three-bas";
-
+import { Utils } from "../Three/bas.module";
 import { Power1 } from "gsap/gsap-core";
 
 export interface ThreeDTextProps {
@@ -20,7 +19,7 @@ class ThreeDText {
       fov: 60,
       dom,
     });
-    root.renderer.setClearColor(0x000000);
+    root.renderer.setClearColor(0x000000, 0);
     root.renderer.setPixelRatio(window.devicePixelRatio || 1);
     root.camera.position.set(0, 0, 400);
     this.init(root);
@@ -28,7 +27,6 @@ class ThreeDText {
   async init(root: THREERoot) {
     const textAnimation = await this.createTextAnimation();
     textAnimation.position.y = -40;
-    console.log(textAnimation);
     root.scene.add(textAnimation);
 
     const tl = gsap.timeline({
@@ -54,18 +52,18 @@ class ThreeDText {
         reject
       );
     });
-    const geometry = this.generateTextGeometry("UP IN SMOKE", {
+    const geometry = this.generateTextGeometry(process.env.TITLE, {
       font,
       size: 40,
-      height: 12,
-      weight: "bold",
+      height: 0,
+      weight: "light",
       style: "normal",
-      curveSegments: 24,
-      bevelSize: 2,
-      bevelThickness: 2,
+      bevelSize: 0.75,
+      bevelThickness: 0.5,
       bevelEnabled: true,
       anchor: { x: 0.5, y: 0.5, z: 0.0 },
     });
+
     Utils.separateFaces(geometry);
     return new TextAnimation(geometry);
   }
@@ -113,13 +111,11 @@ class ThreeDText {
 
     window.addEventListener("mousedown", (e) => {
       mouseDown = true;
-      document.body.style.cursor = "ew-resize";
       _cx = e.clientX;
       stop.call(this);
     });
     window.addEventListener("mouseup", () => {
       mouseDown = false;
-      document.body.style.cursor = "pointer";
       resume.call(this);
     });
     window.addEventListener("mousemove", (e) => {
@@ -127,7 +123,6 @@ class ThreeDText {
         const cx = e.clientX;
         const dx = cx - _cx;
         _cx = cx;
-
         seek.call(this, dx);
       }
     });

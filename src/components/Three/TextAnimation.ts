@@ -1,11 +1,11 @@
-import { Mesh, FlatShading, DoubleSide, MathUtils } from "three";
+import { Mesh, FlatShading, DoubleSide, MathUtils, Color } from "three";
 import type { TextGeometry } from "three";
 import {
   ModelBufferGeometry,
   Utils,
   BasicAnimationMaterial,
   ShaderChunk,
-} from "three-bas";
+} from "./bas.module";
 
 class TextAnimation extends Mesh {
   public animationDuration: number;
@@ -33,9 +33,6 @@ class TextAnimation extends Mesh {
     const minDuration = 2;
     const maxDuration = 8;
     const stretch = 0.25;
-
-    const animationDuration = maxDelayX + maxDelayY + maxDuration - 3;
-    const _animationProgress = 0;
 
     for (
       i = 0, i2 = 0, i3 = 0, i4 = 0;
@@ -94,50 +91,45 @@ class TextAnimation extends Mesh {
         aEndPosition.array[i3 + v + 2] = z;
       }
     }
-    console.log(ShaderChunk);
-    const material = new BasicAnimationMaterial(
-      {
-        flatShading: FlatShading,
-        side: DoubleSide,
-        transparent: true,
-        uniforms: {
-          uTime: { type: "f", value: 0 },
-        },
-        shaderFunctions: [
-          ShaderChunk["cubic_bezier"],
-          ShaderChunk["ease_out_cubic"],
-          ShaderChunk["alphatest_pars_fragment"],
-        ],
-        shaderParameters: [
-          "uniform float uTime;",
-          "attribute vec2 aAnimation;",
-          "attribute vec3 aCentroid;",
-          "attribute vec3 aControl0;",
-          "attribute vec3 aControl1;",
-          "attribute vec3 aEndPosition;",
-        ],
-        shaderVertexInit: [
-          "float tDelay = aAnimation.x;",
-          "float tDuration = aAnimation.y;",
-          "float tTime = clamp(uTime - tDelay, 0.0, tDuration);",
-          "float tProgress =  ease(tTime, 0.0, 1.0, tDuration);",
-        ],
-        shaderTransformPosition: [
-          "vec3 tPosition = transformed - aCentroid;",
-          "tPosition *= 1.0 - tProgress;",
-          "tPosition += aCentroid;",
-          "tPosition += cubicBezier(tPosition, aControl0, aControl1, aEndPosition, tProgress);",
-          "transformed = tPosition;",
-        ],
-      },
-      {
-        diffuse: 0xffffff,
-      }
-    );
-    super(textGeometry, material);
 
-    this.animationDuration = animationDuration;
-    this._animationProgress = _animationProgress;
+    const material = new BasicAnimationMaterial({
+      diffuse: new Color(0xffffff),
+      flatShading: FlatShading,
+      side: DoubleSide,
+      transparent: true,
+      uniforms: {
+        uTime: { type: "f", value: 0 },
+      },
+      vertexFunctions: [
+        ShaderChunk["cubic_bezier"],
+        ShaderChunk["ease_cubic_out"],
+      ],
+      vertexParameters: [
+        "uniform float uTime;",
+        "attribute vec2 aAnimation;",
+        "attribute vec3 aCentroid;",
+        "attribute vec3 aControl0;",
+        "attribute vec3 aControl1;",
+        "attribute vec3 aEndPosition;",
+      ],
+      vertexInit: [
+        "float tDelay = aAnimation.x;",
+        "float tDuration = aAnimation.y;",
+        "float tTime = clamp(uTime - tDelay, 0.0, tDuration);",
+        "float tProgress =  easeCubicOut(tTime, 0.0, 1.0, tDuration);",
+      ],
+      vertexPosition: [
+        "vec3 tPosition = transformed - aCentroid;",
+        "tPosition *= 1.0 - tProgress;",
+        "tPosition += aCentroid;",
+        "tPosition += cubicBezier(tPosition, aControl0, aControl1, aEndPosition, tProgress);",
+        "transformed = tPosition;",
+      ],
+    });
+    super(bufferGeometry, material);
+
+    this.animationDuration = maxDelayX + maxDelayY + maxDuration - 3;
+    this._animationProgress = 0;
     this.material = material;
     this.frustumCulled = false;
   }
