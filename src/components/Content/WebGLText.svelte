@@ -7,13 +7,21 @@
 </style>
 
 <script>
+import THREERoot from "../Three/THREERoot";
 import ThreeDText from "../ThreeDText/ThreeDText";
 import { onMount } from "svelte";
 
 let sceneElement;
 
 onMount(() => {
-  new ThreeDText({ dom: sceneElement });
+  const root = new THREERoot({
+    createCameraControls: false,
+    antialias: true,
+    fov: 60,
+    dom: sceneElement,
+  });
+
+  new ThreeDText({ root });
 });
 </script>
 

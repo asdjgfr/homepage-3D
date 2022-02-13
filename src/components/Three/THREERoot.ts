@@ -9,6 +9,7 @@ export interface THREERootInterface {
   createCameraControls?: boolean;
   alpha?: boolean;
   dom: HTMLElement;
+  onResize?: () => void;
 }
 
 class THREERoot {
@@ -22,6 +23,7 @@ class THREERoot {
   public readonly camera: PerspectiveCamera;
   public readonly scene: Scene;
   public readonly controls?: OrbitControls;
+  public onResize?: () => void;
 
   constructor({
     antialias,
@@ -31,6 +33,7 @@ class THREERoot {
     createCameraControls,
     dom,
     alpha = true,
+    onResize,
   }: THREERootInterface) {
     this.dom = dom;
     this.antialias = antialias ?? false;
@@ -38,13 +41,15 @@ class THREERoot {
     this.zNear = zNear ?? 1;
     this.zFar = zFar ?? 10000;
     this.createCameraControls = createCameraControls ?? true;
+    this.onResize = onResize;
 
     this.renderer = new WebGLRenderer({
       antialias: this.antialias,
       alpha,
     });
     this.dom.appendChild(this.renderer.domElement);
-
+    this.renderer.setClearColor(0x000000, 0);
+    this.renderer.setPixelRatio(window.devicePixelRatio || 1);
     const { width, height } = this.domRect;
     this.camera = new PerspectiveCamera(
       this.fov,
@@ -52,6 +57,7 @@ class THREERoot {
       this.zNear,
       this.zFar
     );
+    this.camera.position.set(0, 0, 400);
 
     this.scene = new Scene();
 
@@ -76,6 +82,7 @@ class THREERoot {
     this.renderer.render(this.scene, this.camera);
   }
   resize() {
+    this.onResize && this.onResize();
     const { width, height } = this.domRect;
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();

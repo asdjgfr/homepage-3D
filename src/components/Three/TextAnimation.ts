@@ -93,7 +93,7 @@ class TextAnimation extends Mesh {
     }
 
     const material = new BasicAnimationMaterial({
-      diffuse: new Color(0xffffff),
+      diffuse: new Color(0xdddddd),
       flatShading: FlatShading,
       side: DoubleSide,
       transparent: true,
@@ -132,6 +132,7 @@ class TextAnimation extends Mesh {
     this._animationProgress = 0;
     this.material = material;
     this.frustumCulled = false;
+    this.userData = { fontSize: textGeometry["userData"].fontSize };
   }
 
   get animationProgress() {

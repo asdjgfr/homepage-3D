@@ -1,43 +1,49 @@
-import { Matrix4, MathUtils, FontLoader, TextGeometry } from "three";
+import { Matrix4, MathUtils, FontLoader, TextGeometry, Vector3 } from "three";
 import gsap from "gsap";
-import THREERoot from "../Three/THREERoot";
+import type THREERoot from "../Three/THREERoot";
 import TextAnimation from "../Three/TextAnimation";
 import { Utils } from "../Three/bas.module";
 import { Power1 } from "gsap/gsap-core";
 
 export interface ThreeDTextProps {
-  dom: HTMLElement;
+  root: THREERoot;
 }
 
 class ThreeDText {
   dom: HTMLElement;
-  constructor({ dom }: ThreeDTextProps) {
-    this.dom = dom;
-    const root = new THREERoot({
-      createCameraControls: false,
-      antialias: true,
-      fov: 60,
-      dom,
-    });
-    root.renderer.setClearColor(0x000000, 0);
-    root.renderer.setPixelRatio(window.devicePixelRatio || 1);
-    root.camera.position.set(0, 0, 400);
+  private textAnimation: TextAnimation;
+  private THREERoot: THREERoot;
+  constructor({ root }: ThreeDTextProps) {
+    this.THREERoot = root;
+
+    root.onResize = this.resize.bind(this);
     this.init(root);
   }
+  resize() {
+    if (this.textAnimation === undefined) return;
+    const { scale } = this;
+
+    this.textAnimation.scale.set(scale, scale, 1);
+  }
+  get scale() {
+    return (this.THREERoot?.domRect.width ?? 1920) / 1920;
+  }
   async init(root: THREERoot) {
-    const textAnimation = await this.createTextAnimation();
+    this.textAnimation = await this.createTextAnimation();
+    const { textAnimation } = this;
     textAnimation.position.y = -40;
+    this.resize();
     root.scene.add(textAnimation);
 
     const tl = gsap.timeline({
-      repeat: -1,
+      repeat: 0,
       repeatDelay: 0.25,
-      yoyo: true,
     });
+
     tl.fromTo(
       textAnimation,
-      { animationProgress: 0.0 },
-      { duration: 4, animationProgress: 1.0, ease: Power1.easeInOut },
+      { animationProgress: 1.0 },
+      { duration: 4, animationProgress: 0, ease: Power1.easeInOut },
       0
     );
 
@@ -73,7 +79,9 @@ class ThreeDText {
 
     geometry.computeBoundingBox();
 
-    geometry["userData"] = {};
+    geometry["userData"] = {
+      fontSize: params.size,
+    };
     geometry["userData"].size = {
       width: geometry.boundingBox.max.x - geometry.boundingBox.min.x,
       height: geometry.boundingBox.max.y - geometry.boundingBox.min.y,
@@ -123,7 +131,7 @@ class ThreeDText {
         const cx = e.clientX;
         const dx = cx - _cx;
         _cx = cx;
-        seek.call(this, dx);
+        seek.call(this, -dx);
       }
     });
     // mobile
@@ -141,7 +149,7 @@ class ThreeDText {
       const dx = cx - _cx;
       _cx = cx;
 
-      seek.call(this, dx);
+      seek.call(this, -dx);
       e.preventDefault();
     });
   }
