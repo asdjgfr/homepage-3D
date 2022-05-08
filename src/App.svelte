@@ -9,11 +9,9 @@
 </style>
 
 <script lang="ts">
-import WebGLFluidSimulation from "./components/WebGLFluidSimulation/WebGLFluidSimulation.svelte";
 import Content from "./components/Content/Content.svelte";
 </script>
 
 <main class="main">
-  <WebGLFluidSimulation />
   <Content />
 </main>
