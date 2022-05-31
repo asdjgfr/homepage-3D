@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
-let darkMode = false;
+let darkMode = true;
 const THEME_KEY = "themePreference";
 
 function setDarkTheme(dark: boolean) {
@@ -14,26 +14,27 @@ function toggleMode() {
 }
 
 onMount(() => {
-  const theme = window.localStorage.getItem(THEME_KEY);
-  if (theme === "dark") {
-    setDarkTheme(true);
-  } else if (
-    theme == null &&
+  const theme = window.localStorage.getItem(THEME_KEY) ?? "dark";
+
+  if (
+    theme === "dark" ||
     window.matchMedia("(prefers-color-scheme: dark)").matches
   ) {
     setDarkTheme(true);
+  } else if (theme === "light") {
+    setDarkTheme(false);
   }
 });
 </script>
 
-<div class="absolute top-0 right-0 w-8 h-8 p-2" on:click="{toggleMode}">
+<div class="ml-auto cursor-pointer" on:click="{toggleMode}">
   {#if darkMode}
     <svg
       aria-hidden="true"
       focusable="false"
       data-prefix="far"
       data-icon="moon"
-      class="svg-inline--fa fa-moon fa-w-16"
+      class="w-8"
       role="img"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 512 512"
@@ -48,7 +49,7 @@ onMount(() => {
       focusable="false"
       data-prefix="far"
       data-icon="sun"
-      class="svg-inline--fa fa-sun fa-w-16"
+      class="w-8"
       role="img"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 512 512"

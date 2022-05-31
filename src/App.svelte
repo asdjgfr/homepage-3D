@@ -1,17 +1,14 @@
 <style>
-.custom-style {
-  @apply italic;
-}
 </style>
 
 <script lang="ts">
-import ModeSwitcher from "./ModeSwitcher.svelte";
+import Header from "./Header/Header.svelte";
 import Tailwindcss from "./Tailwindcss.svelte";
 export let name: string;
 </script>
 
 <Tailwindcss />
-<ModeSwitcher />
+<Header />
 <main class="p-4 mx-auto text-center max-w-xl ">
   <h1 class="uppercase text-6xl leading-normal font-thin text-blue-500">
     Hello {name}!
